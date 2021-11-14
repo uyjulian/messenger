@@ -2,6 +2,7 @@
 #include <tchar.h>
 #include "ncbind/ncbind.hpp"
 #include <map>
+#include <cinttypes>
 using namespace std;
 
 // 吉里吉里のウインドウクラス
@@ -98,7 +99,7 @@ protected:
 				break;
 			case tvtInteger:
 				{
-					NativeReceiver receiverNative = (NativeReceiver)(tjs_int)receiver;
+					NativeReceiver receiverNative = (NativeReceiver)(tjs_intptr_t)(tTVInteger)receiver;
 					return receiverNative(obj, (void*)(tjs_int)userData, message);
 				}
 				break;
@@ -141,7 +142,7 @@ protected:
 			if (stream != NULL) {
 				char buf[100];
 				DWORD len;
-				_snprintf(buf, sizeof buf, "%d", (int)hwnd);
+				_snprintf(buf, sizeof buf, "%" PRId64, (tjs_intptr_t)hwnd);
 				stream->Write(buf, strlen(buf), &len);
 				stream->Release();
 			}
@@ -204,8 +205,8 @@ protected:
 	void registReceiver(bool enable) {
 		// レシーバ更新
 		tTJSVariant mode    = enable ? (tTVInteger)(tjs_int)wrmRegister : (tTVInteger)(tjs_int)wrmUnregister;
-		tTJSVariant proc     = (tTVInteger)(tjs_int)MyReceiver;
-		tTJSVariant userdata = (tTVInteger)(tjs_int)objthis;
+		tTJSVariant proc     = (tTVInteger)(tjs_intptr_t)MyReceiver;
+		tTJSVariant userdata = (tTVInteger)(tjs_intptr_t)objthis;
 		tTJSVariant *p[3] = {&mode, &proc, &userdata};
 		int ret = objthis->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 3, p, objthis);
 	}
