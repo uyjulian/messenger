@@ -330,7 +330,7 @@ public:
 		tTJSVariant val;
 		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
 		UserMsgInfo info(reinterpret_cast<HWND>((tjs_int)(val)), msg, (WPARAM)wparam, (LPARAM)lparam);
-		EnumWindows(enumWindowsProcUser, (LPARAM)&info);
+		EnumWindows((WNDENUMPROC)enumWindowsProcUser, (LPARAM)&info);
 	}
 	
 	// --------------------------------------------------------
@@ -372,7 +372,7 @@ public:
 		tTJSVariant val;
 		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
 		MsgInfo info(reinterpret_cast<HWND>((tjs_int)(val)), key, msg);
-		EnumWindows(enumWindowsProc, (LPARAM)&info);
+		EnumWindows((WNDENUMPROC)enumWindowsProc, (LPARAM)&info);
 	}
 
 };
