@@ -1,6 +1,6 @@
 #include <windows.h>
 #include <tchar.h>
-#include "ncbind/ncbind.hpp"
+#include "ncbind.hpp"
 #include <map>
 using namespace std;
 
