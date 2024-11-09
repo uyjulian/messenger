@@ -98,8 +98,8 @@ protected:
 				break;
 			case tvtInteger:
 				{
-					NativeReceiver receiverNative = (NativeReceiver)(tjs_int)receiver;
-					return receiverNative(obj, (void*)(tjs_int)userData, message);
+					NativeReceiver receiverNative = (NativeReceiver)(tjs_int64)receiver;
+					return receiverNative(obj, (void*)(tjs_int64)userData, message);
 				}
 				break;
 			}
@@ -141,7 +141,7 @@ protected:
 			if (stream != NULL) {
 				char buf[100];
 				DWORD len;
-				_snprintf(buf, sizeof buf, "%d", (int)hwnd);
+				_snprintf(buf, sizeof buf, "%lld", (tjs_int64)hwnd);
 				stream->Write(buf, strlen(buf), &len);
 				stream->Release();
 			}
@@ -194,7 +194,7 @@ protected:
 		if (storeKey != "") {
 			tTJSVariant val;
 			objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
-			storeHWND(reinterpret_cast<HWND>((tjs_int)(val)));
+			storeHWND(reinterpret_cast<HWND>((tjs_int64)(val)));
 		}
 	}
 	
@@ -204,8 +204,8 @@ protected:
 	void registReceiver(bool enable) {
 		// レシーバ更新
 		tTJSVariant mode    = enable ? (tTVInteger)(tjs_int)wrmRegister : (tTVInteger)(tjs_int)wrmUnregister;
-		tTJSVariant proc     = (tTVInteger)(tjs_int)MyReceiver;
-		tTJSVariant userdata = (tTVInteger)(tjs_int)objthis;
+		tTJSVariant proc     = (tTVInteger)(tjs_int64)MyReceiver;
+		tTJSVariant userdata = (tTVInteger)(tjs_int64)objthis;
 		tTJSVariant *p[3] = {&mode, &proc, &userdata};
 		int ret = objthis->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 3, p, objthis);
 	}
@@ -328,7 +328,7 @@ public:
 	void sendUserMessage(unsigned int msg, tjs_int wparam, tjs_int lparam) {
 		tTJSVariant val;
 		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
-		UserMsgInfo info(reinterpret_cast<HWND>((tjs_int)(val)), msg, (WPARAM)wparam, (LPARAM)lparam);
+		UserMsgInfo info(reinterpret_cast<HWND>((tjs_int64)(val)), msg, (WPARAM)wparam, (LPARAM)lparam);
 		EnumWindows(enumWindowsProcUser, (LPARAM)&info);
 	}
 	
@@ -370,7 +370,7 @@ public:
 	void sendMessage(const TCHAR *key, const tjs_char *msg) {
 		tTJSVariant val;
 		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
-		MsgInfo info(reinterpret_cast<HWND>((tjs_int)(val)), key, msg);
+		MsgInfo info(reinterpret_cast<HWND>((tjs_int64)(val)), key, msg);
 		EnumWindows(enumWindowsProc, (LPARAM)&info);
 	}
 
