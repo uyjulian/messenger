@@ -100,7 +100,7 @@ protected:
 			case tvtInteger:
 				{
 					NativeReceiver receiverNative = (NativeReceiver)(tjs_intptr_t)(tTVInteger)receiver;
-					return receiverNative(obj, (void*)(tjs_int)userData, message);
+					return receiverNative(obj, (void*)(tjs_int64)userData, message);
 				}
 				break;
 			}
@@ -195,7 +195,7 @@ protected:
 		if (storeKey != "") {
 			tTJSVariant val;
 			objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
-			storeHWND(reinterpret_cast<HWND>((tjs_int)(val)));
+			storeHWND(reinterpret_cast<HWND>((tjs_int64)(val)));
 		}
 	}
 	
