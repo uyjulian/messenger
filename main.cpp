@@ -79,8 +79,8 @@ protected:
 			case tvtObject:
 				{
 					tTJSVariant result;
-					tTJSVariant wparam = (tjs_int)message->WParam;
-					tTJSVariant lparam = (tjs_int)message->LParam;
+					tTJSVariant wparam = (tTVInteger)message->WParam;
+					tTJSVariant lparam = (tTVInteger)message->LParam;
 					tTJSVariant *p[] = {&userData, &wparam, &lparam};
 					receiver.AsObjectClosureNoAddRef().FuncCall(0, NULL, NULL, &result, 3, p, NULL);
 					return (int)result != 0;
@@ -89,8 +89,8 @@ protected:
 			case tvtString:
 				{
 					tTJSVariant result;
-					tTJSVariant wparam = (tjs_int)message->WParam;
-					tTJSVariant lparam = (tjs_int)message->LParam;
+					tTJSVariant wparam = (tTVInteger)message->WParam;
+					tTJSVariant lparam = (tTVInteger)message->LParam;
 					tTJSVariant *p[] = {&userData, &wparam, &lparam};
 					obj->FuncCall(0, receiver.GetString(), NULL, &result, 3, p, obj);
 					return (int)result != 0;
@@ -98,8 +98,8 @@ protected:
 				break;
 			case tvtInteger:
 				{
-					NativeReceiver receiverNative = (NativeReceiver)(tjs_int)receiver;
-					return receiverNative(obj, (void*)(tjs_int)userData, message);
+					NativeReceiver receiverNative = (NativeReceiver)receiver.AsInteger();
+					return receiverNative(obj, (void*)userData.AsInteger(), message);
 				}
 				break;
 			}
@@ -194,7 +194,7 @@ protected:
 		if (storeKey != "") {
 			tTJSVariant val;
 			objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
-			storeHWND(reinterpret_cast<HWND>((tjs_int)(val)));
+			storeHWND(reinterpret_cast<HWND>(val.AsInteger()));
 		}
 	}
 	
@@ -204,8 +204,8 @@ protected:
 	void registReceiver(bool enable) {
 		// レシーバ更新
 		tTJSVariant mode    = enable ? (tTVInteger)(tjs_int)wrmRegister : (tTVInteger)(tjs_int)wrmUnregister;
-		tTJSVariant proc     = (tTVInteger)(tjs_int)MyReceiver;
-		tTJSVariant userdata = (tTVInteger)(tjs_int)objthis;
+		tTJSVariant proc     = reinterpret_cast<tTVInteger>(&MyReceiver);
+		tTJSVariant userdata = reinterpret_cast<tTVInteger>(objthis);
 		tTJSVariant *p[3] = {&mode, &proc, &userdata};
 		int ret = objthis->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 3, p, objthis);
 	}
@@ -299,7 +299,8 @@ public:
 		unsigned int msg;
 		WPARAM wparam;
 		LPARAM lparam;
-		UserMsgInfo(HWND hWnd, unsigned int msg, WPARAM wparam, LPARAM lparam) : hWnd(hWnd), msg(msg), wparam(wparam), lparam(lparam) {}
+		bool ispost;
+		UserMsgInfo(HWND hWnd, unsigned int msg, WPARAM wparam, LPARAM lparam, bool ispost = false) : hWnd(hWnd), msg(msg), wparam(wparam), lparam(lparam), ispost(ispost) {}
 	};
 
 	/**
@@ -313,7 +314,8 @@ public:
 		GetClassName(hWnd, buf, sizeof buf);
 		if (info->hWnd != hWnd && (_tcscmp(buf, KRWINDOWCLASS) == 0 ||
 								   _tcscmp(buf, KZWINDOWCLASS) == 0)) {
-			SendMessage(hWnd, info->msg, info->wparam, info->lparam);
+			if (info->ispost) PostMessage(hWnd, info->msg, info->wparam, info->lparam);
+			else              SendMessage(hWnd, info->msg, info->wparam, info->lparam);
 		}
 		return TRUE;
 	}
@@ -325,13 +327,24 @@ public:
 	 * @param wparam WPARAM値
 	 * @param lparam LPARAM値
 	 */
-	void sendUserMessage(unsigned int msg, tjs_int wparam, tjs_int lparam) {
+	void sendUserMessage(unsigned int msg, tTVInteger wparam, tTVInteger lparam) { _sendPostUserMessage(msg, wparam, lparam, false); }
+	void postUserMessage(unsigned int msg, tTVInteger wparam, tTVInteger lparam) { _sendPostUserMessage(msg, wparam, lparam, true); }
+	void _sendPostUserMessage(unsigned int msg, tTVInteger wparam, tTVInteger lparam, bool ispost) {
 		tTJSVariant val;
 		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
-		UserMsgInfo info(reinterpret_cast<HWND>((tjs_int)(val)), msg, (WPARAM)wparam, (LPARAM)lparam);
+		UserMsgInfo info(reinterpret_cast<HWND>(val.AsInteger()), msg, (WPARAM)wparam, (LPARAM)lparam, ispost);
 		EnumWindows(enumWindowsProcUser, (LPARAM)&info);
 	}
-	
+
+	// 直送version
+	void sendUserMessageDirect(tTVInteger nWnd, unsigned int msg, tTVInteger wparam, tTVInteger lparam) {
+		SendMessage(reinterpret_cast<HWND>(nWnd), msg, (WPARAM)wparam, (LPARAM)lparam);
+	}
+	// 直送 post version
+	void postUserMessageDirect(tTVInteger nWnd, unsigned int msg, tTVInteger wparam, tTVInteger lparam) {
+		PostMessage(reinterpret_cast<HWND>(nWnd), msg, (WPARAM)wparam, (LPARAM)lparam);
+	}
+
 	// --------------------------------------------------------
 	
 	// 送信メッセージ情報
@@ -370,10 +383,17 @@ public:
 	void sendMessage(const TCHAR *key, const tjs_char *msg) {
 		tTJSVariant val;
 		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
-		MsgInfo info(reinterpret_cast<HWND>((tjs_int)(val)), key, msg);
+		MsgInfo info(reinterpret_cast<HWND>(val.AsInteger()), key, msg);
 		EnumWindows(enumWindowsProc, (LPARAM)&info);
 	}
 
+	// 直送version
+	void sendMessageDirect(tTVInteger nWnd, const TCHAR *key, const tjs_char *msg) {
+		tTJSVariant val;
+		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
+		MsgInfo info(reinterpret_cast<HWND>(val.AsInteger()), key, msg);
+		SendMessage(reinterpret_cast<HWND>(nWnd), WM_COPYDATA, (WPARAM)info.hWnd, (LPARAM)&info.copyData);
+	}
 };
 
 // インスタンスゲッタ
@@ -396,6 +416,12 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowMsg, Window) {
 	RawCallback("registerUserMessageReceiver", &WindowMsg::registerUserMessageReceiver, 0);
 	Method(L"sendUserMessage", &WindowMsg::sendUserMessage);
 	Method(L"sendMessage", &WindowMsg::sendMessage);
+
+	Method(L"sendUserMessageDirect", &WindowMsg::sendUserMessageDirect);
+	Method(L"sendMessageDirect", &WindowMsg::sendMessageDirect);
+
+	Method(L"postUserMessage", &WindowMsg::postUserMessage);
+	Method(L"postUserMessageDirect", &WindowMsg::postUserMessageDirect);
 }
 
 /**

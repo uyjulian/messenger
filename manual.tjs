@@ -35,7 +35,7 @@ class Window {
 	/**
 	 * ユーザ定義のメッセージハンドラを登録します。
 	 *
-	 * @param mode wrmRegister:登録 wrmUnRegister:解除
+	 * @param mode wrmRegister=0:登録 wrmUnRegister=1:解除
 	 * @param msg 数値:メッセージ番号 文字列:RegisterWindowMessage して値を決定
 	 * @param proc 呼び出しファンクション
 	 * @param userdata ユーザデータパラメータ
@@ -67,7 +67,36 @@ class Window {
 	 * @param lparam LPARAM (整数扱いで処理されます)
 	 */
 	function sendUserMessage(msg, wparam, lparam);
-	
+
+	/**
+	 * HWNDを指定して低レベルメッセージ送信を実行します。
+	 * @description 特定のウインドウに指定のメッセージが送信されます
+	 * @param hwnd HWND数値
+	 * @param msg メッセージ番号
+	 * @param wparam WPARAM (整数扱いで処理されます)
+	 * @param lparam LPARAM (整数扱いで処理されます)
+	 */
+	function sendUserMessageDirect(hwnd, msg, wparam, lparam);
+
+	/**
+	 * 低レベルメッセージをポストします。
+	 * @description 全吉里吉里に指定のメッセージがポストされます
+	 * @param msg メッセージ番号
+	 * @param wparam WPARAM (整数扱いで処理されます)
+	 * @param lparam LPARAM (整数扱いで処理されます)
+	 */
+	function postUserMessage(msg, wparam, lparam);
+
+	/**
+	 * HWNDを指定して低レベルメッセージをポストします。
+	 * @description 特定のウインドウに指定のメッセージがポストされます
+	 * @param hwnd HWND数値
+	 * @param msg メッセージ番号
+	 * @param wparam WPARAM (整数扱いで処理されます)
+	 * @param lparam LPARAM (整数扱いで処理されます)
+	 */
+	function postUserMessageDirect(hwnd, msg, wparam, lparam);
+
 	// ---------------------------------------------------
 	
 	/**
@@ -78,6 +107,16 @@ class Window {
 	 * @param message メッセージ(文字列)
 	 */
 	function sendMessage(key, message);
+
+	/**
+	 * HWNDを指定してメッセージの送信を行います。
+	 * @description 指定したウインドウに WM_COPYDATA メッセージを送信します。
+	 * 受け取る側はsendMessageと共通の処理のため識別キーは必ず指定してください
+	 * @param hwnd HWND数値
+	 * @param key 識別キー(文字列:256文字までなので注意)
+	 * @param message メッセージ(文字列)
+	 */
+	function sendMessageDirect(hwnd, key, message);
 
 	/**
 	 * イベント：メッセージ受信。
