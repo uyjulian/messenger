@@ -333,8 +333,8 @@ public:
 	void _sendPostUserMessage(unsigned int msg, tTVInteger wparam, tTVInteger lparam, bool ispost) {
 		tTJSVariant val;
 		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
-		UserMsgInfo info(reinterpret_cast<HWND>((tjs_int)(val)), msg, (WPARAM)wparam, (LPARAM)lparam);
-		EnumWindows((WNDENUMPROC)enumWindowsProcUser, (LPARAM)&info);
+		UserMsgInfo info(reinterpret_cast<HWND>((tjs_intptr_t)(tTVInteger)(val)), msg, (WPARAM)wparam, (LPARAM)lparam);
+		EnumWindows(enumWindowsProcUser, (LPARAM)&info);
 	}
 
 	// 直送version
@@ -384,8 +384,8 @@ public:
 	void sendMessage(const TCHAR *key, const tjs_char *msg) {
 		tTJSVariant val;
 		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
-		MsgInfo info(reinterpret_cast<HWND>((tjs_int)(val)), key, msg);
-		EnumWindows((WNDENUMPROC)enumWindowsProc, (LPARAM)&info);
+		MsgInfo info(reinterpret_cast<HWND>((tjs_intptr_t)(tTVInteger)(val)), key, msg);
+		EnumWindows(enumWindowsProc, (LPARAM)&info);
 	}
 
 	// 直送version
