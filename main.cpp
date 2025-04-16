@@ -100,7 +100,7 @@ protected:
 			case tvtInteger:
 				{
 					NativeReceiver receiverNative = (NativeReceiver)(tjs_intptr_t)(tTVInteger)receiver;
-					return receiverNative(obj, (void*)(tjs_int64)userData, message);
+					return receiverNative(obj, (void*)(tjs_intptr_t)(tTVInteger)userData, message);
 				}
 				break;
 			}
