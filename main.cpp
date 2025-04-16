@@ -98,8 +98,8 @@ protected:
 				break;
 			case tvtInteger:
 				{
-					NativeReceiver receiverNative = (NativeReceiver)(tjs_int64)receiver;
-					return receiverNative(obj, (void*)(tjs_int64)userData, message);
+					NativeReceiver receiverNative = (NativeReceiver)(tjs_intptr_t)(tTVInteger)receiver;
+					return receiverNative(obj, (void*)(tjs_intptr_t)(tTVInteger)userData, message);
 				}
 				break;
 			}
@@ -204,8 +204,8 @@ protected:
 	void registReceiver(bool enable) {
 		// レシーバ更新
 		tTJSVariant mode    = enable ? (tTVInteger)(tjs_int)wrmRegister : (tTVInteger)(tjs_int)wrmUnregister;
-		tTJSVariant proc     = (tTVInteger)(tjs_int64)MyReceiver;
-		tTJSVariant userdata = (tTVInteger)(tjs_int64)objthis;
+		tTJSVariant proc     = (tTVInteger)(tjs_intptr_t)MyReceiver;
+		tTJSVariant userdata = (tTVInteger)(tjs_intptr_t)objthis;
 		tTJSVariant *p[3] = {&mode, &proc, &userdata};
 		int ret = objthis->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 3, p, objthis);
 	}
@@ -332,7 +332,7 @@ public:
 	void _sendPostUserMessage(unsigned int msg, tTVInteger wparam, tTVInteger lparam, bool ispost) {
 		tTJSVariant val;
 		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
-		UserMsgInfo info(reinterpret_cast<HWND>((tjs_int64)(val)), msg, (WPARAM)wparam, (LPARAM)lparam);
+		UserMsgInfo info(reinterpret_cast<HWND>((tjs_intptr_t)(tTVInteger)(val)), msg, (WPARAM)wparam, (LPARAM)lparam);
 		EnumWindows(enumWindowsProcUser, (LPARAM)&info);
 	}
 
@@ -383,7 +383,7 @@ public:
 	void sendMessage(const TCHAR *key, const tjs_char *msg) {
 		tTJSVariant val;
 		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
-		MsgInfo info(reinterpret_cast<HWND>((tjs_int64)(val)), key, msg);
+		MsgInfo info(reinterpret_cast<HWND>((tjs_intptr_t)(tTVInteger)(val)), key, msg);
 		EnumWindows(enumWindowsProc, (LPARAM)&info);
 	}
 
